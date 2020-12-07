@@ -47,7 +47,7 @@ entry_num.pack()
 
 
 btn_run = tk.Button(text="Sort", command=lambda: window.destroy()) #fix this later
-btn_run.pack(side=tk.LEFT)
+btn_run.pack()
 
 btn_quit = tk.Button(text="Quit", command=lambda: window.destroy())
 btn_quit.pack()
