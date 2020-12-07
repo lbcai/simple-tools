@@ -8,7 +8,7 @@ This is a tool written in Python 3.9 that will extract files from the folder whe
 No setup is required. Download the executable and it's ready to run!
 
 ### Image Sorter
-This is a tool written in Python 3.9 to sort image files placed on the desktop into other locations based on how the images are named. This was intended for artists who download reference images from the web in large volumes and find themselves with a lot of work when it's time to sort these images for ease of access.
+This is a tool written in Python 3.9 to sort image files into other locations based on how the images are named. The tool allows for customization of save location and sort method, and it saves user settings between uses. This was intended for artists who download reference images from the web in large volumes and find themselves with a lot of work when it's time to sort these images for ease of access. 
 
 #### Usage
 Coming soon.
