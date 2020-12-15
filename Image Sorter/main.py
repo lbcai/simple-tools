@@ -25,7 +25,17 @@ def get_main_directory():
 
 
 def update_fields():
-    num_list_var.get()
+    lbl_entry_field_1.grid_forget()
+    lbl_entry_field_2.grid_forget()
+    for i in range(20):
+        entry_field_prefix[i].grid_forget()
+        entry_field_folder[i].grid_forget()
+    chosen_fields = num_list_var.get()
+    for i in range(0, int(chosen_fields)):
+        lbl_entry_field_1.grid(row=0, column=0, padx=3)
+        entry_field_prefix[i].grid(row=2 + i, column=0, padx=3)
+        lbl_entry_field_2.grid(row=0, column=1, padx=3)
+        entry_field_folder[i].grid(row=2 + i, column=1, padx=3)
 
 
 # Make the window.
@@ -38,17 +48,12 @@ horizontal_position = int(window.winfo_screenwidth()/2 - window.winfo_reqwidth()
 vertical_position = int(window.winfo_screenheight()/2 - window.winfo_reqheight())
 window.geometry('+{}+{}'.format(horizontal_position, vertical_position))
 
-frame_main = tk.Frame()
-#frame_main.grid_rowconfigure([0, 1], weight=1)
-#frame_main.grid_columnconfigure([0, 1], weight=1)
-frame_main.pack()
-
 # Label widgets display text and images on the window. Use .pack() to get it onto the window.
-lbl_main_directory_request = tk.Label(master=frame_main, text="Location to create Images folder:")
+lbl_main_directory_request = tk.Label(text="Location to create Images folder:")
 lbl_main_directory_request.pack()
 
 # Make a frame to put the entry box and button in so they can be together :)
-frame_main_dir_request = tk.Frame(master=frame_main)
+frame_main_dir_request = tk.Frame()
 frame_main_dir_request.pack()
 # Add an input field to window that will display main directory location. To avoid path validity problems,
 # we're just not going to allow the user to edit the text in the entry widget.
@@ -61,7 +66,7 @@ entry_main.grid(row=1, column=0, padx=3)
 btn_choose_dir = tk.Button(master=frame_main_dir_request, text="Choose...", command=lambda: get_main_directory())
 btn_choose_dir.grid(row=1, column=1, padx=3)
 
-frame_entry_num = tk.Frame(master=frame_main)
+frame_entry_num = tk.Frame()
 frame_entry_num.pack()
 # Add a category number input field that will generate the appropriate number of entries in the next section.
 lbl_cat_num_request = tk.Label(master=frame_entry_num, text="Categories:")
@@ -75,17 +80,28 @@ menu_num.grid(row=0, column=1, padx=3)
 # Bind category number dropdown changes to a method that changes the number of fields displayed.
 num_list_var.trace_add('write', lambda *args: update_fields())
 
-frame_generated_entries = tk.Frame(master=frame_main)
+# Set up some dictionaries for dynamic updating window based on input. Will be able to retrieve inputs later.
+frame_generated_entries = tk.Frame()
+entry_field_prefix = {}
+entry_field_folder = {}
+lbl_entry_field_1 = tk.Label(master=frame_generated_entries, text="Images with prefix:")
+lbl_entry_field_2 = tk.Label(master=frame_generated_entries, text="Will be moved to folder:")
+for i in range(20):
+    entry_field_prefix[i] = tk.Entry(master=frame_generated_entries)
+    entry_field_folder[i] = tk.Entry(master=frame_generated_entries)
 frame_generated_entries.pack()
 
-# Add a Sort and Quit button.
-frame_end_button = tk.Frame(master=frame_main)
+# Add a Save Settings, Sort, and Quit button.
+frame_end_button = tk.Frame()
 frame_end_button.pack()
-btn_run = tk.Button(master=frame_end_button, text="Sort", command=lambda: window.destroy())  # fix this later
+btn_run = tk.Button(master=frame_end_button, text="Save Prefs", command=lambda: window.destroy())  # fix this later
 btn_run.grid(row=1, column=0, padx=3, pady=5)
 
-btn_quit = tk.Button(master=frame_end_button, text="Quit", command=lambda: window.destroy())
-btn_quit.grid(row=1, column=1, padx=3, pady=5)
+btn_save = tk.Button(master=frame_end_button, text="Sort Images", command=lambda: window.destroy())
+btn_save.grid(row=1, column=1, padx=3, pady=5)
+
+btn_quit = tk.Button(master=frame_end_button, text="Quit Program", command=lambda: window.destroy())
+btn_quit.grid(row=1, column=2, padx=3, pady=5)
 
 # Show the window.
 window.mainloop()
