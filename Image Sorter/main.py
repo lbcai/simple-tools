@@ -49,19 +49,54 @@ def update_fields():
 
 # Create a settings file so variables can persist between openings.
 def save_prefs():
-    print('fix this')
+    current_file_path = os.path.abspath(os.path.dirname(__file__))
+    print(current_file_path)
 
 
+# Check if files are images, move file to appropriate category subfolder. Popup if filename is taken.
 def sort_files():
     chosen_fields = num_list_var.get()
-    main_file_location = entry_main.get()
-    #for file in os.listdir(main_file_location):
+    main_file_location = os.path.join(os.path.join(entry_main.get(), entry_folder_name.get()))
+    search_file_location = entry_search.get()
+    imglist = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.tiff', '.tif', '.bmp']
+    for i in range(int(chosen_fields)):
+        if not os.path.isdir(os.path.join(os.path.join(main_file_location, entry_field_folder[i].get()))):
+            try:
+                os.makedirs(os.path.join(os.path.join(main_file_location, entry_field_folder[i].get())))
+            except FileExistsError:
+                pass
+    for file in os.listdir(search_file_location):
+        if os.path.splitext(file)[1].lower() in imglist:
+            for i in range(int(chosen_fields)):
+                if file.startswith(entry_field_prefix[i].get()):
+                    try:
+                        end_path = os.path.join(os.path.join(main_file_location, entry_field_folder[i].get()))
+                        os.rename(os.path.join(os.path.join(search_file_location, file)),
+                                  os.path.join(os.path.join(end_path, file)))
+                    except:
+                        popup_warning(file)
+                        exit()
+
+def popup_warning(file):
+    popup = tk.Tk()
+    popup.title("Warning")
+    popup.minsize(300, 100)
+    frame_popup = tk.Frame(master=popup, padx=10, pady=5)
+    frame_popup.pack(expand=True)
+    warning_text = tk.Label(master=frame_popup, text='There is already a file with the name ' + file +
+                                                     '\nin the destination folder. The process terminated.')
+    warning_text.pack()
+    btn_quit_warning = tk.Button(master=frame_popup, text="Close", command=lambda: popup.destroy())
+    btn_quit_warning.pack(pady=5)
+    horizontal_pop = int(popup.winfo_screenwidth() / 2 - (popup.winfo_reqwidth()))
+    vertical_pop = int(popup.winfo_screenheight() / 2 - (popup.winfo_reqheight() / 2))
+    popup.geometry('+{}+{}'.format(horizontal_pop, vertical_pop))
+    popup.mainloop()
 
 
 # Make the window.
 window = tk.Tk()
 window.title("Image Sorter 1.0")
-window.minsize(300, 315)
 frame_master = tk.Frame(padx=10, pady=5)
 frame_master.pack(expand=True)
 
@@ -89,7 +124,7 @@ btn_choose_dir = tk.Button(master=frame_main_dir_request, text="Choose...", comm
 btn_choose_dir.grid(row=1, column=1, padx=3)
 
 
-frame_mid = tk.Frame(master=frame_master, bd=2, padx=5, pady=5)
+frame_mid = tk.Frame(master=frame_master, padx=5, pady=5)
 frame_mid.pack(pady=(0,5))
 lbl_folder_name_request = tk.Label(master=frame_mid, text="Name of main folder \n (will be created if does not exist):")
 lbl_folder_name_request.pack()
