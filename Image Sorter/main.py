@@ -50,10 +50,11 @@ def update_fields():
 # Create a settings file so variables can persist between openings.
 def save_prefs():
     current_file_path = os.path.abspath(os.path.dirname(__file__))
-    print(current_file_path)
+    #with open('image_sorter_prefs.txt', 'w') as prefs:
 
 
-# Check if files are images, move file to appropriate category subfolder. Popup if filename is taken.
+
+# Check if files are images, move file to appropriate category subfolder. Popup and stop if filename is taken.
 def sort_files():
     chosen_fields = num_list_var.get()
     main_file_location = os.path.join(os.path.join(entry_main.get(), entry_folder_name.get()))
@@ -75,7 +76,9 @@ def sort_files():
                                   os.path.join(os.path.join(end_path, file)))
                     except:
                         popup_warning(file)
-                        exit()
+                        raise SystemExit
+    popup_complete()
+
 
 def popup_warning(file):
     popup = tk.Tk()
@@ -92,6 +95,22 @@ def popup_warning(file):
     vertical_pop = int(popup.winfo_screenheight() / 2 - (popup.winfo_reqheight() / 2))
     popup.geometry('+{}+{}'.format(horizontal_pop, vertical_pop))
     popup.mainloop()
+
+
+def popup_complete():
+    popup_fin = tk.Tk()
+    popup_fin.title("Sorting complete!")
+    popup_fin.minsize(150, 100)
+    frame_popup_fin = tk.Frame(master=popup_fin)
+    frame_popup_fin.pack(expand=True)
+    finished_text = tk.Label(master=frame_popup_fin, text='Sorting complete!')
+    finished_text.pack()
+    btn_quit_fin = tk.Button(master=frame_popup_fin, text="Close", command=lambda: popup_fin.destroy())
+    btn_quit_fin.pack(pady=5)
+    horizontal_pop_fin = int(popup_fin.winfo_screenwidth() / 2 - (popup_fin.winfo_reqwidth() / 1.6))
+    vertical_pop_fin = int(popup_fin.winfo_screenheight() / 2 - (popup_fin.winfo_reqheight() / 2))
+    popup_fin.geometry('+{}+{}'.format(horizontal_pop_fin, vertical_pop_fin))
+    popup_fin.mainloop()
 
 
 # Make the window.
