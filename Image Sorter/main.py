@@ -50,8 +50,43 @@ def update_fields():
 # Create a settings file so variables can persist between openings.
 def save_prefs():
     current_file_path = os.path.abspath(os.path.dirname(__file__))
-    #with open('image_sorter_prefs.txt', 'w') as prefs:
+    with open(os.path.join(os.path.join(current_file_path, 'image_sorter_prefs.txt')), 'w') as prefs:
+        prefs.write(entry_main.get() + "\n")
+        prefs.write(entry_folder_name.get() + "\n")
+        prefs.write(entry_search.get() + "\n")
+        prefs.write(num_list_var.get() + "\n")
+        for i in entry_field_prefix:
+            prefs.write(entry_field_prefix[i].get() + "\n")
+        for j in entry_field_folder:
+            prefs.write(entry_field_folder[j].get() + "\n")
 
+
+# Check if a settings file exists and load the variables from that file if so.
+def on_startup_prefs_check():
+    current_file_path = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(os.path.join(current_file_path, 'image_sorter_prefs.txt')), 'r') as prefs:
+        saved_list = prefs.readlines()
+        for i in range(len(saved_list)):
+            saved_list[i] = saved_list[i].rstrip('\r\n')
+        entry_main.configure(state="normal")
+        entry_main.delete(0, tk.END)
+        entry_main.insert(0, saved_list[0])
+        entry_main.configure(state="readonly")
+        entry_folder_name.delete(0, tk.END)
+        entry_folder_name.insert(0, saved_list[1])
+        entry_search.configure(state="normal")
+        entry_search.delete(0, tk.END)
+        entry_search.insert(0, saved_list[2])
+        entry_search.configure(state="readonly")
+        num_list_var.set(saved_list[3])
+        prefix_counter = 4
+        folder_counter = 24
+        for i in range(0, len(entry_field_prefix)):
+            entry_field_prefix[i].insert(0, saved_list[prefix_counter])
+            prefix_counter += 1
+        for j in range(0, len(entry_field_folder)):
+            entry_field_folder[j].insert(0, saved_list[folder_counter])
+            folder_counter += 1
 
 
 # Check if files are images, move file to appropriate category subfolder. Popup and stop if filename is taken.
@@ -202,9 +237,7 @@ btn_save.grid(row=1, column=1, padx=3, pady=5)
 btn_quit = tk.Button(master=frame_end_button, text="Quit Program", command=lambda: window.destroy())
 btn_quit.grid(row=1, column=2, padx=3, pady=5)
 
-# Check if a settings file exists and load the variables from that file if so.
-
-
+on_startup_prefs_check()
 # Show the window.
 window.mainloop()
 
