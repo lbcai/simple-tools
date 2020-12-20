@@ -24,6 +24,7 @@ def get_main_directory():
         pass
 
 
+# Use to ask the user for directory where items to be sorted are located.
 def get_search_directory():
     search_directory_holder = askdirectory(initialdir=desktop, title='Choose a location...')
     if os.path.exists(search_directory_holder):
@@ -47,6 +48,7 @@ def update_fields():
         entry_field_folder[i].grid(row=2 + i, column=1, padx=3, pady=2)
     window.minsize(300, 291 + (int(chosen_fields)*24))
 
+
 # Create a settings file so variables can persist between openings.
 def save_prefs():
     current_file_path = os.path.abspath(os.path.dirname(__file__))
@@ -64,29 +66,32 @@ def save_prefs():
 # Check if a settings file exists and load the variables from that file if so.
 def on_startup_prefs_check():
     current_file_path = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(os.path.join(current_file_path, 'image_sorter_prefs.txt')), 'r') as prefs:
-        saved_list = prefs.readlines()
-        for i in range(len(saved_list)):
-            saved_list[i] = saved_list[i].rstrip('\r\n')
-        entry_main.configure(state="normal")
-        entry_main.delete(0, tk.END)
-        entry_main.insert(0, saved_list[0])
-        entry_main.configure(state="readonly")
-        entry_folder_name.delete(0, tk.END)
-        entry_folder_name.insert(0, saved_list[1])
-        entry_search.configure(state="normal")
-        entry_search.delete(0, tk.END)
-        entry_search.insert(0, saved_list[2])
-        entry_search.configure(state="readonly")
-        num_list_var.set(saved_list[3])
-        prefix_counter = 4
-        folder_counter = 24
-        for i in range(0, len(entry_field_prefix)):
-            entry_field_prefix[i].insert(0, saved_list[prefix_counter])
-            prefix_counter += 1
-        for j in range(0, len(entry_field_folder)):
-            entry_field_folder[j].insert(0, saved_list[folder_counter])
-            folder_counter += 1
+    try:
+        with open(os.path.join(os.path.join(current_file_path, 'image_sorter_prefs.txt')), 'r') as prefs:
+            saved_list = prefs.readlines()
+            for i in range(len(saved_list)):
+                saved_list[i] = saved_list[i].rstrip('\r\n')
+            entry_main.configure(state="normal")
+            entry_main.delete(0, tk.END)
+            entry_main.insert(0, saved_list[0])
+            entry_main.configure(state="readonly")
+            entry_folder_name.delete(0, tk.END)
+            entry_folder_name.insert(0, saved_list[1])
+            entry_search.configure(state="normal")
+            entry_search.delete(0, tk.END)
+            entry_search.insert(0, saved_list[2])
+            entry_search.configure(state="readonly")
+            num_list_var.set(saved_list[3])
+            prefix_counter = 4
+            folder_counter = 24
+            for i in range(0, len(entry_field_prefix)):
+                entry_field_prefix[i].insert(0, saved_list[prefix_counter])
+                prefix_counter += 1
+            for j in range(0, len(entry_field_folder)):
+                entry_field_folder[j].insert(0, saved_list[folder_counter])
+                folder_counter += 1
+    except FileNotFoundError:
+        pass
 
 
 # Check if files are images, move file to appropriate category subfolder. Popup and stop if filename is taken.
@@ -101,20 +106,43 @@ def sort_files():
                 os.makedirs(os.path.join(os.path.join(main_file_location, entry_field_folder[i].get())))
             except FileExistsError:
                 pass
-    for file in os.listdir(search_file_location):
-        if os.path.splitext(file)[1].lower() in imglist:
-            for i in range(int(chosen_fields)):
-                if file.startswith(entry_field_prefix[i].get()):
-                    try:
-                        end_path = os.path.join(os.path.join(main_file_location, entry_field_folder[i].get()))
-                        os.rename(os.path.join(os.path.join(search_file_location, file)),
-                                  os.path.join(os.path.join(end_path, file)))
-                    except:
-                        popup_warning(file)
-                        raise SystemExit
+    try:
+        for file in os.listdir(search_file_location):
+            if os.path.splitext(file)[1].lower() in imglist:
+                for i in range(int(chosen_fields)):
+                    if file.startswith(entry_field_prefix[i].get()):
+                        try:
+                            end_path = os.path.join(os.path.join(main_file_location, entry_field_folder[i].get()))
+                            os.rename(os.path.join(os.path.join(search_file_location, file)),
+                                      os.path.join(os.path.join(end_path, file)))
+                        except WindowsError:
+                            popup_warning(file)
+                            raise SystemExit
+    except FileNotFoundError:
+        popup_missing_search_location()
+        raise SystemExit
     popup_complete()
 
 
+# Popup for missing search location.
+def popup_missing_search_location():
+    popup_missing = tk.Tk()
+    popup_missing.title("Warning")
+    popup_missing.minsize(100, 100)
+    frame_popup_missing = tk.Frame(master=popup_missing, padx=10, pady=5)
+    frame_popup_missing.pack(expand=True)
+    warning_missing = tk.Label(master=frame_popup_missing, text='The location of items to be'
+                                                                '\nsorted does not exist.')
+    warning_missing.pack()
+    btn_quit_missing = tk.Button(master=frame_popup_missing, text="Close", command=lambda: popup_missing.destroy())
+    btn_quit_missing.pack(pady=5)
+    horizontal_pop_m = int(popup_missing.winfo_screenwidth() / 2 - (popup_missing.winfo_reqwidth() / 1.5))
+    vertical_pop_m = int(popup_missing.winfo_screenheight() / 2 - (popup_missing.winfo_reqheight() / 2))
+    popup_missing.geometry('+{}+{}'.format(horizontal_pop_m, vertical_pop_m))
+    popup_missing.mainloop()
+
+
+# Popup for file with same name already in destination folder.
 def popup_warning(file):
     popup = tk.Tk()
     popup.title("Warning")
@@ -132,6 +160,7 @@ def popup_warning(file):
     popup.mainloop()
 
 
+# Popup for successful process completion.
 def popup_complete():
     popup_fin = tk.Tk()
     popup_fin.title("Sorting complete!")
@@ -160,7 +189,7 @@ vertical_position = int(window.winfo_screenheight()/2 - window.winfo_reqheight()
 window.geometry('+{}+{}'.format(horizontal_position, vertical_position))
 
 frame_top = tk.Frame(master=frame_master, bd=2, relief=tk.GROOVE, padx=5, pady=5)
-frame_top.pack(pady=(5,0))
+frame_top.pack(pady=(5, 0))
 # Label widgets display text and images on the window. Use .pack() to get it onto the window.
 lbl_main_directory_request = tk.Label(master=frame_top, text="Location of main folder:")
 lbl_main_directory_request.pack()
@@ -177,15 +206,16 @@ entry_main.grid(row=1, column=0, ipadx=20, padx=3)
 btn_choose_dir = tk.Button(master=frame_main_dir_request, text="Choose...", command=lambda: get_main_directory())
 btn_choose_dir.grid(row=1, column=1, padx=3)
 
-
+# Add an entry box for user to name destination folder.
 frame_mid = tk.Frame(master=frame_master, padx=5, pady=5)
-frame_mid.pack(pady=(0,5))
+frame_mid.pack(pady=(0, 5))
 lbl_folder_name_request = tk.Label(master=frame_mid, text="Name of main folder \n (will be created if does not exist):")
 lbl_folder_name_request.pack()
 entry_folder_name = tk.Entry(master=frame_mid)
 entry_folder_name.insert(0, 'Images')
 entry_folder_name.pack()
 
+# Prompt user for file location of items to be sorted.
 frame_bot = tk.Frame(master=frame_master, bd=2, relief=tk.GROOVE, padx=5, pady=5)
 frame_bot.pack()
 lbl_search_dir_request = tk.Label(master=frame_bot, text="Location of items to be sorted:")
@@ -215,10 +245,10 @@ num_list_var.trace_add('write', lambda *args: update_fields())
 
 # Set up some dictionaries for dynamic updating window based on input. Will be able to retrieve inputs later.
 frame_generated_entries = tk.Frame(master=frame_master)
-entry_field_prefix = {}
-entry_field_folder = {}
 lbl_entry_field_1 = tk.Label(master=frame_generated_entries, text="Images with prefix:")
 lbl_entry_field_2 = tk.Label(master=frame_generated_entries, text="Will go in category:")
+entry_field_prefix = {}
+entry_field_folder = {}
 for i in range(20):
     entry_field_prefix[i] = tk.Entry(master=frame_generated_entries)
     entry_field_folder[i] = tk.Entry(master=frame_generated_entries)
@@ -240,8 +270,3 @@ btn_quit.grid(row=1, column=2, padx=3, pady=5)
 on_startup_prefs_check()
 # Show the window.
 window.mainloop()
-
-
-# Use this to get main dir in the main entry field.
-#    main_directory = entry_main.get()
-#    print(main_directory)
