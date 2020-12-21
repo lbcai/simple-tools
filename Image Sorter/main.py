@@ -63,6 +63,34 @@ def save_prefs():
             prefs.write(entry_field_folder[j].get() + "\n")
 
 
+# Revert settings to default.
+def default_prefs():
+    try:
+        current_file_path = os.path.abspath(os.path.dirname(__file__))
+        os.remove(os.path.join(os.path.join(current_file_path, 'image_sorter_prefs.txt')))
+    except FileNotFoundError:
+        pass
+    entry_main.configure(state="normal")
+    entry_main.delete(0, tk.END)
+    entry_main.insert(0, desktop)
+    entry_main.configure(state="readonly")
+    entry_folder_name.delete(0, tk.END)
+    entry_folder_name.insert(0, 'Images')
+    entry_search.configure(state="normal")
+    entry_search.delete(0, tk.END)
+    entry_search.insert(0, desktop)
+    entry_search.configure(state="readonly")
+    num_list_var.set(num_list[0])
+    for i in range(0, len(entry_field_prefix)):
+        entry_field_prefix[i].delete(0, tk.END)
+        entry_field_prefix[i].insert(0, '')
+    for j in range(0, len(entry_field_folder)):
+        entry_field_folder[j].delete(0, tk.END)
+        entry_field_folder[j].insert(0, '')
+    menu_num.forget()
+    menu_num.grid(row=0, column=1, padx=3)
+
+
 # Check if a settings file exists and load the variables from that file if so.
 def on_startup_prefs_check():
     current_file_path = os.path.abspath(os.path.dirname(__file__))
@@ -255,17 +283,20 @@ for i in range(20):
 update_fields()
 frame_generated_entries.pack()
 
-# Add a Save Settings, Sort, and Quit button.
+# Add a Save Settings, Default Settings, Sort, and Quit button.
 frame_end_button = tk.Frame(master=frame_master)
 frame_end_button.pack()
 btn_run = tk.Button(master=frame_end_button, text="Save Prefs", command=lambda: save_prefs())
 btn_run.grid(row=1, column=0, padx=3, pady=5)
 
-btn_save = tk.Button(master=frame_end_button, text="Sort Images", command=lambda: sort_files())
-btn_save.grid(row=1, column=1, padx=3, pady=5)
+btn_run_default = tk.Button(master=frame_end_button, text="Default Prefs", command=lambda: default_prefs())
+btn_run_default.grid(row=1, column=1, padx=3, pady=5)
 
-btn_quit = tk.Button(master=frame_end_button, text="Quit Program", command=lambda: window.destroy())
-btn_quit.grid(row=1, column=2, padx=3, pady=5)
+btn_save = tk.Button(master=frame_end_button, text="Sort Images", command=lambda: sort_files())
+btn_save.grid(row=1, column=2, padx=3, pady=5)
+
+btn_quit = tk.Button(master=frame_end_button, text="Quit", command=lambda: window.destroy())
+btn_quit.grid(row=1, column=3, padx=3, pady=5)
 
 on_startup_prefs_check()
 # Show the window.
