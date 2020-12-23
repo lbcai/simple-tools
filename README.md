@@ -13,7 +13,9 @@ This is a tool written in Python 3.9 with the tkinter library for GUI implementa
 #### Usage
 Download the executable and run. The following window appears:
 <br>
-![Image Sorter window](Image%20Sorter/images/imagesorter_window.png)
+<p align="center">  
+  <img src="Image%20Sorter/images/imagesorter_window.png?raw=true" alt="Image Sorter window"/>
+</p>
 1. Main Folder Location
    * Choose the location of the main folder that sorted images will be placed in. Any image categories will be created as subfolders in this main folder.
 2. Main Folder Name
