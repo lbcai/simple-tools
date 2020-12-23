@@ -8,7 +8,18 @@ This is a tool written in Python 3.9 that will extract files from the folder whe
 No setup is required. Download the executable and it's ready to run!
 
 ### Image Sorter
-This is a tool written in Python 3.9 to sort image files into other locations based on how the images are named. The tool allows for customization of save location and sort method, and it saves user settings between uses. This was intended for artists who download reference images from the web in large volumes and find themselves with a lot of work when it's time to sort these images for ease of access. 
+This is a tool written in Python 3.9 with the tkinter library for GUI implementation. It will sort image files into other locations based on how the images are named. The tool allows for customization of save location and sort method, plus it can save user settings between uses. This was intended for artists who download reference images from the web in large volumes and find themselves with a lot of work when it's time to sort these images for ease of access. 
 
 #### Usage
-Coming soon.
+Download the executable and run. The following window appears:
+<br>
+![Image Sorter window](Image%20Sorter/images/imagesorter_window.png)
+1. Choose the location of the main folder that sorted images will be placed in. Any image categories will be created as subfolders in this main folder.
+2. Name the main folder. If the name of an already existing folder is selected, the images will be moved to this folder.
+3. Choose the location of the images that require sorting.
+4. Choose the number of categories (between 1 and 20) that images will be sorted into. The window will dynamically update with fields below this dropdown to accomodate.
+5. Fill in categories that images with the correct prefix will be sorted into. For example, a_skull.png will be sorted into the Images/Anatomy folder with these settings. If fields are left blank, the images will be deposited in the main folder without being categorized.
+6. Press the Save Prefs button to save a .txt file in the same location as the executable. This allows the executable to remember user settings the next time it is opened. Keep the executable and the settings .txt in the same directory.
+7. Press the Default Prefs button to remove the settings .txt and reset the window to default settings.
+8. Press the Sort Images button to sort according to the current input in the window.
+9. Press the Quit button to close the program.
