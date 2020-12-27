@@ -8,6 +8,65 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 client = discord.Client()
 
+hangman_full = (f'```\n________\n'
+                    f'|/    _|_\n'
+                    r"|    |x x|"
+                    f'\n'
+                    r'|    /[Y]\ '
+                    f'\n'
+                    r'|     / \ '
+                    f'\n'
+                    f'|_____```')
+
+hangman1 = (f'```\n________\n'
+            f'|/    _|_\n'
+            r"|    |'-'|"
+            f'\n'
+            r'|      '
+            f'\n'
+            r'|      '
+            f'\n'
+            f'|_____```')
+
+hangman2 = (f'```\n________\n'
+            f'|/    _|_\n'
+            r"|    |'-'|"
+            f'\n'
+            r'|     [Y] '
+            f'\n'
+            r'|       '
+            f'\n'
+            f'|_____```')
+
+hangman3 = (f'```\n________\n'
+            f'|/    _|_\n'
+            r"|    |'-'|"
+            f'\n'
+            r'|    /[Y] '
+            f'\n'
+            r'|       '
+            f'\n'
+            f'|_____```')
+
+hangman4 = (f'```\n________\n'
+            f'|/    _|_\n'
+            r"|    |'-'|"
+            f'\n'
+            r'|    /[Y]\ '
+            f'\n'
+            r'|       '
+            f'\n'
+            f'|_____```')
+
+hangman5 = (f'```\n________\n'
+            f'|/    _|_\n'
+            r"|    |'-'|"
+            f'\n'
+            r'|    /[Y]\ '
+            f'\n'
+            r'|     /'
+            f'\n'
+            f'|_____```')
 
 
 @client.event
@@ -26,67 +85,6 @@ async def on_message(message):
 
     if message.content.lower() == '>help':
         await message.channel.send(help_command_list)
-
-    hangman_full = (f'```\n _________\n'
-                    f'|/      _|_\n'
-                    r"|      |x.x|"
-                    f'\n'
-                    r'|      /[Y]\ '
-                    f'\n'
-                    r'|       / \ '
-                    f'\n'
-                    f'|_____```')
-
-    hangman1 = (f'```\n _________\n'
-                f'|/      _|_\n'
-                r"|      |'-'|"
-                f'\n'
-                r'|      '
-                f'\n'
-                r'|      '
-                f'\n'
-                f'|_____```')
-
-    hangman2 = (f'```\n _________\n'
-                f'|/      _|_\n'
-                r"|      |'-'|"
-                f'\n'
-                r'|       [Y] '
-                f'\n'
-                r'|       '
-                f'\n'
-                f'|_____```')
-
-    hangman3 = (f'```\n _________\n'
-                f'|/      _|_\n'
-                r"|      |'-'|"
-                f'\n'
-                r'|      /[Y] '
-                f'\n'
-                r'|       '
-                f'\n'
-                f'|_____```')
-
-    hangman4 = (f'```\n _________\n'
-                f'|/      _|_\n'
-                r"|      |'-'|"
-                f'\n'
-                r'|      /[Y]\ '
-                f'\n'
-                r'|       '
-                f'\n'
-                f'|_____```')
-
-    hangman5 = (f'```\n _________\n'
-                f'|/      _|_\n'
-                r"|      |'-'|"
-                f'\n'
-                r'|      /[Y]\ '
-                f'\n'
-                r'|       /'
-                f'\n'
-                f'|_____```')
-
 
     if message.content.lower() == '>hangman':
         await message.channel.send(hangman_full)
