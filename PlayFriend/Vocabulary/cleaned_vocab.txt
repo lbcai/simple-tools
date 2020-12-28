@@ -937,8 +937,7 @@ unnecessarily helpful, meddlesome, interfering
 Omniscient
 all knowing, infinite awareness
 Omnivorous
-eating or absorbing everything, feeding on both animal and vegetable
-Substances
+eating or absorbing everything, feeding on both animal and vegetable substances
 Onerous
 burdensome, oppressive, troublesome
 Onus
@@ -966,8 +965,7 @@ stingy
 Patina
 surface discoloration caused by age and oxidation
 Patois
-a language used by a particular population that differs from standard
-Speech
+a language used by a particular population that differs from standard speech
 Penultimate
 next to last
 Penury
@@ -1035,6 +1033,7 @@ state of rest or inactivity
 Raffish
 jaunty, sporty, disreputable, vulgar, characterized by a careless
 Unconventionality
+originality, the ability to think and act independently
 Rapprochement
 a re-establishment of good relations
 Rarefied
@@ -1162,8 +1161,7 @@ truthful, honest
 Verdant
 covered with green plants, leafy
 Vicarious
-acting for another, sharing in an experience of another through the
-Imagination
+acting for another, sharing in an experience of another through the imagination
 Viscosity
 a thick or sticky consistency of a liquid
 Vitriolic
@@ -1279,7 +1277,7 @@ having an instable appetite, great voracity
 Ephemeral
 short-lived, transitory
 Epicene
-having characteristics of both male and female neuter
+having characteristics of both male and female
 Escarpment
 cliff, a steep slope resulting from erosion
 Esculent
@@ -1361,7 +1359,8 @@ an atmosphere that surrounds a person or thing, a rain cloud
 Obloquy
 strong language of condemnation
 Obstreperous
-stubbornly defiant, angry and clamorousoffal
+stubbornly defiant, angry and clamorous
+Offal
 the waste parts of a product (often as in a butchered animal), refuse, rubbish
 Opine
 to express an opinion
@@ -1454,4 +1453,4 @@ to blow of, or away, to separate the good from the bad
 Wraith
 a specter, ghost of a dead person
 Ziggurat
-a terrace
+a pyramidal stepped temple tower

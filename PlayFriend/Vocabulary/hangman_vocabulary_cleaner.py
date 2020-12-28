@@ -30,7 +30,17 @@ with open('cleaned_vocab.txt', 'wb') as newvocab:
                 counter = 1
             newvocab.write(newline.encode('utf8'))
 
-    
+with open('cleaned_vocab.txt', 'r', encoding='utf8') as vocab:
+    vocab_list = vocab.readlines()
+    vocab_list = [x.strip() for x in vocab_list]
+
+vocab = []
+
+for i in range(0, len(vocab_list)):
+    if i != len(vocab_list)-1:
+        if i % 2 == 0:
+            tuple = (vocab_list[i], vocab_list[i+1])
+            vocab.append(tuple)
 
 
 
