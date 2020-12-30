@@ -79,7 +79,8 @@ hangman5 = (f'```\n________\n'
             f'|_____```')
 
 
-def hangman_start():
+@bot.command(name='hm start', help='Starts a game of hangman.')
+async def hangman_start():
     vocab = [('Abdicate', 'to step down from a position of power'),
              ('Abridge', 'to shorten, condense or lessen in length'), ('Absolve', 'to forgive or free from blame'),
              ('Abysmal', 'extremely wretched, bottomless'), ('Acquiesce', 'to comply passively, to give in'),
@@ -596,19 +597,11 @@ def hangman_start():
     return word, guess
 
 
-@bot.command(name='hangman_check')
-async def hangman_check(message):
-    if message.content.isalpha():
-        if len(message.content.strip()) == 1:
-            for letter in word[0]:
-                if message.content.strip() == letter:
-                    print(word[0].index(letter))
-
-
-@bot.command(name='help_list')
-async def help_list(message):
-    help_command_list = '>help: Returns a list of basic commands. \n>hm start: Start a game of hangman.'
-    await message.channel.send(help_command_list)
+@bot.command()
+async def hangman_check(message, word, guess):
+    for letter in word[0]:
+        if message == letter:
+            print(word[0].index(letter))
 
 
 @bot.event
@@ -625,8 +618,7 @@ async def on_message(message):
 
     command = message.content.lower().strip().split()
 
-    if command[0] == '>help':
-        await help_list(message)
+    # Not currently functional. Should make a hangman class, add category documentation for help, pass context
 
     if command[0] == '>hm':
         try:
@@ -636,10 +628,15 @@ async def on_message(message):
                 await message.channel.send(guess)
                 print(word)
                 print(guess)
-            elif len(command[1].strip()) == 1 & command[1].isalpha():
-                await hangman_check(message)
+            elif len(command[1].strip()) == 1 & command[1].isalpha() & word is not None:
+                await hangman_check(command[1].strip().lower(), word, guess)
+            elif word is not None & command[1].strip().lower() == word.lower():
+                print('correct')
+                await message.channel.send('Congratulations! You won. The word was', word[0], 'which means', word[1], '.')
         except IndexError:
             pass
+
+    await bot.process_commands(message)
 
 
 bot.run(TOKEN)
