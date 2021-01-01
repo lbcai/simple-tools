@@ -19,16 +19,21 @@ class Hangman(commands.Cog):
     def __init__(self):
         self.hangman_image_counter = 0
         self.word = random.choice(self.hangman_vocab)
-        self.guess = '```'
+        self.guess_list = []
         for i in range(0, len(self.word[0])):
-            if self.word[0][i] != ' ':
-                self.guess += '_ '
-            elif self.word[0][i] == ' ':
+            self.guess_list.append('_')
+        Hangman.hangman_guess_filler(self)
+
+    def hangman_guess_filler(self):
+        self.guess = '```'
+        for item in self.guess_list:
+            self.guess += item
+            if item != ' ':
                 self.guess += ' '
-            if i == len(self.word[0]) - 1:
-                self.guess += '```'
+        self.guess += '```'
 
     async def hangman_output(self, message):
+        Hangman.hangman_guess_filler(self)
         await message.channel.send(self.hangman_list[self.hangman_image_counter])
         await message.channel.send(self.guess)
 
@@ -37,41 +42,43 @@ class Hangman(commands.Cog):
         await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
         if game_dictionary[ctx.message.channel].hangman_image_counter == 6:
             bot_message = f'Your man is hung. RIP. The word was {game_dictionary[ctx.message.channel].word[0].lower()}, ' \
-                          f'which means {game_dictionary[ctx.message.channel].word[1].lower()}.'
-            game_dictionary[ctx.message.channel] = None
-            await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
+                          f'which means {game_dictionary[ctx.message.channel].word[1]}.'
             await ctx.message.channel.send(bot_message)
+            game_dictionary[ctx.message.channel] = None
 
     async def hangman_win(self, ctx):
         bot_message = f'Congratulations! You won. The word was {game_dictionary[ctx.message.channel].word[0].lower()}, ' \
-                      f'which means {game_dictionary[ctx.message.channel].word[1].lower()}.'
-        game_dictionary[ctx.message.channel] = None
+                      f'which means {game_dictionary[ctx.message.channel].word[1]}.'
         await ctx.message.channel.send(bot_message)
+        game_dictionary[ctx.message.channel] = None
 
     @commands.command(name='hm', help='Make a guess. Use single letters unless you are confident you know the entire word!')
     async def hangman_check(self, ctx, message):
-        print(game_dictionary[ctx.message.channel].word[0])
-        if len(message.strip()) == 1:
-            hm_letter_counter = 0
-            for letter in range(0, len(game_dictionary[ctx.message.channel].word[0])):
-                if message[-1].lower() == game_dictionary[ctx.message.channel].word[0][letter].lower():
-                    hm_letter_counter += 1
-                    # replace the '_' corresponding to letter with message[-1].upper()
-                    # even indices = '_' and odd = spaces that must be preserved.
-                    # change guess to a list with _ for each letter, go through list to change and go off list to print
-                    game_dictionary[ctx.message.channel].guess
-                    [letter*2]
-                else:
-                    pass
-            if hm_letter_counter == 0:
-                await Hangman.hangman_wrong(game_dictionary[ctx.message.channel], ctx)
-            else:
-                await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
+        if message.isalpha() is False:
+            await ctx.message.channel.send('Use a letter, fool.')
         else:
-            if game_dictionary[ctx.message.channel].word[0].lower() == message.strip().lower():
-                await Hangman.hangman_win(game_dictionary[ctx.message.channel], ctx)
+            if len(message.strip()) == 1:
+                hm_letter_counter = 0
+                for letter in range(0, len(game_dictionary[ctx.message.channel].word[0])):
+                    if message[-1].strip().lower() == game_dictionary[ctx.message.channel].word[0][letter].lower():
+                        hm_letter_counter += 1
+                        game_dictionary[ctx.message.channel].guess_list[letter] = game_dictionary[ctx.message.channel].word[0][letter].upper()
+                    else:
+                        pass
+                if hm_letter_counter == 0:
+                    await Hangman.hangman_wrong(game_dictionary[ctx.message.channel], ctx)
+                else:
+                    await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
             else:
-                await Hangman.hangman_wrong(game_dictionary[ctx.message.channel], ctx)
+                if game_dictionary[ctx.message.channel].word[0].lower() == message.strip().lower():
+                    for letter in range(0, len(game_dictionary[ctx.message.channel].word[0])):
+                        game_dictionary[ctx.message.channel].guess_list[letter] = game_dictionary[ctx.message.channel].word[0][letter].upper()
+                    await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
+                    await Hangman.hangman_win(game_dictionary[ctx.message.channel], ctx)
+                else:
+                    await Hangman.hangman_wrong(game_dictionary[ctx.message.channel], ctx)
+            if '_' not in game_dictionary[ctx.message.channel].guess_list:
+                await Hangman.hangman_win(game_dictionary[ctx.message.channel], ctx)
 
 
 
