@@ -19,6 +19,9 @@ class Hangman(commands.Cog):
     def __init__(self):
         self.hangman_image_counter = 0
         self.word = random.choice(self.hangman_vocab)
+        Hangman.hangman_guess_list(self)
+
+    def hangman_guess_list(self):
         self.guess_list = []
         for i in range(0, len(self.word[0])):
             self.guess_list.append('_')
@@ -31,6 +34,24 @@ class Hangman(commands.Cog):
             if item != ' ':
                 self.guess += ' '
         self.guess += '```'
+
+    @commands.command(name='hmword', help='Submit a custom word in spoiler tags, ex. ||word||. This will restart the game.')
+    async def hangman_custom(self, ctx, message):
+        hangman_custom_word = ''
+        if '||' in message.strip():
+            for item in message.strip():
+                if item == '|':
+                    pass
+                else:
+                    hangman_custom_word += item
+            if game_dictionary[ctx.message.channel] is not None:
+                game_dictionary[ctx.message.channel].hangman_image_counter = 0
+                game_dictionary[ctx.message.channel].word = None
+                game_dictionary[ctx.message.channel].word = (hangman_custom_word, '...google it')
+                Hangman.hangman_guess_list(game_dictionary[ctx.message.channel])
+            await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
+        else:
+            pass
 
     async def hangman_output(self, message):
         Hangman.hangman_guess_filler(self)
@@ -55,7 +76,7 @@ class Hangman(commands.Cog):
     @commands.command(name='hm', help='Make a guess. Use single letters unless you are confident you know the entire word!')
     async def hangman_check(self, ctx, message):
         if message.isalpha() is False:
-            await ctx.message.channel.send('Use a letter, fool.')
+            await ctx.message.channel.send('Use a letter.')
         else:
             if len(message.strip()) == 1:
                 hm_letter_counter = 0
