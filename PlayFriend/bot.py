@@ -37,6 +37,7 @@ class Hangman(commands.Cog):
 
     @commands.command(name='hmword', help='Submit a custom word in spoiler tags, ex. ||word||. This will restart the game.')
     async def hangman_custom(self, ctx, message):
+        await ctx.channel.send(f'A new game with {ctx.message.author.mention}\'s custom word is starting.')
         hangman_custom_word = ''
         if '||' in message.strip():
             for item in message.strip():
@@ -44,9 +45,9 @@ class Hangman(commands.Cog):
                     pass
                 else:
                     hangman_custom_word += item
+            await ctx.message.delete()
             if game_dictionary[ctx.message.channel] is not None:
                 game_dictionary[ctx.message.channel].hangman_image_counter = 0
-                game_dictionary[ctx.message.channel].word = None
                 game_dictionary[ctx.message.channel].word = (hangman_custom_word, '...google it')
                 Hangman.hangman_guess_list(game_dictionary[ctx.message.channel])
             await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
