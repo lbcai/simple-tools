@@ -10,6 +10,32 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 bot = Bot(command_prefix='>')
 game_dictionary = {}
 
+#currently working on setting up backend for databasing and allowing bot to stay online indefinitely
+#must set up databasing to save long games of dungeon, also must account for large numbers of items, mobs, special events
+#consider storing a lot of these things in module_vars.py
+#possibly need multiple classes for dungeon game class.
+
+class Dungeon(commands.Cog):
+    """Docs here"""
+    print('placeholder')
+
+class Tictactoe(commands.Cog):
+    """Docs here"""
+    #stuff to do: set up something that will populate the current board, probably based on a list
+    #plan algo for winning ttt games
+    #write gamestart message (using grid of small number emoji) for ease of use
+
+    ttt_blank_board = ':white_medium_square::white_medium_square::white_medium_square: ' \
+                      ':white_medium_square::white_medium_square::white_medium_square: ' \
+                      ':white_medium_square::white_medium_square::white_medium_square:'
+
+@bot.command(name='tttstart', help='Starts a game of tic tac toe.')
+async def ttt_start(message):
+    ttt_blank_board = f':white_medium_square::white_medium_square::white_medium_square: \n' \
+                      ':white_medium_square::white_medium_square::white_medium_square: \n' \
+                      ':white_medium_square::white_medium_square::white_medium_square:'
+    await message.channel.send(ttt_blank_board)
+
 
 class Hangman(commands.Cog):
     """Allows users to play hangman. Use function hangman_start to create game instances.
