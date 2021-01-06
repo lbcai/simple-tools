@@ -21,20 +21,41 @@ class Dungeon(commands.Cog):
 
 class Tictactoe(commands.Cog):
     """Docs here"""
-    #stuff to do: set up something that will populate the current board, probably based on a list
+    #stuff to do: set up something that will update the current board
     #plan algo for winning ttt games
-    #write gamestart message (using grid of small number emoji) for ease of use
+    #randomize whether bot or player goes first. allow player vs player games.
+    #allow assignment of custom X and O markers.
 
-    ttt_blank_board = ':white_medium_square::white_medium_square::white_medium_square: ' \
-                      ':white_medium_square::white_medium_square::white_medium_square: ' \
-                      ':white_medium_square::white_medium_square::white_medium_square:'
+    def __init__(self):
+        self.tt_board_list = [':white_medium_square:' for i in range(0, 9)]
+        self.players = {}
+        #fix this
+        if random.choice([0, 1]) == 0:
+            self.players[first] = 'bot'
+            self.players[second] = message.author
+        else:
+            self.players[first] = message.author
+            self.players[second] = 'bot'
 
-@bot.command(name='tttstart', help='Starts a game of tic tac toe.')
+    @commands.command(name='ttquit', help='Quit the current tic tac toe game.')
+    async def ttt_quit(self, ctx):
+        game_dictionary.pop(ctx.message.channel, None)
+        await ctx.message.channel.send('The tic tac toe game has ended.')
+
+    async def ttt_output(self, ctx):
+        tt_board = '{0}{1}{2} \n{3}{4}{5} \n{6}{7}{8}'.format(*game_dictionary[ctx.message.channel].tt_board_list)
+        await ctx.message.channel.send(tt_board)
+
+
+@bot.command(name='ttstart', help='Starts a game of tic tac toe.')
 async def ttt_start(message):
-    ttt_blank_board = f':white_medium_square::white_medium_square::white_medium_square: \n' \
-                      ':white_medium_square::white_medium_square::white_medium_square: \n' \
-                      ':white_medium_square::white_medium_square::white_medium_square:'
-    await message.channel.send(ttt_blank_board)
+    if message.channel not in game_dictionary:
+        game_dictionary[message.channel] = Tictactoe()
+        await message.channel.send('To mark a square, type >tt # according to this chart!\n'
+                                   ':one::two::three: \n:four::five::six: \n:seven::eight::nine:')
+        await Tictactoe.ttt_output(game_dictionary[message.channel], message)
+    else:
+        await message.channel.send('There is already a tic tac toe game in this channel!')
 
 
 class Hangman(commands.Cog):
@@ -140,7 +161,6 @@ class Hangman(commands.Cog):
         await ctx.message.channel.send('The hangman game has ended.')
 
 
-
 @bot.command(name='hmstart', help='Starts a game of hangman.')
 async def hangman_start(message):
     if message.channel not in game_dictionary:
@@ -150,7 +170,7 @@ async def hangman_start(message):
         await message.channel.send('There is already a hangman game in this channel!')
 
 bot.add_cog(Hangman())
-
+bot.add_cog(Tictactoe())
 
 @bot.event
 async def on_ready():
