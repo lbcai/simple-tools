@@ -37,6 +37,10 @@ class Tictactoe(commands.Cog):
             self.players[first] = message.author
             self.players[second] = 'bot'
 
+    @classmethod
+    def user_input(cls, message):
+        return message
+
     @commands.command(name='ttquit', help='Quit the current tic tac toe game.')
     async def ttt_quit(self, ctx):
         game_dictionary.pop(ctx.message.channel, None)
@@ -49,13 +53,16 @@ class Tictactoe(commands.Cog):
 
 @bot.command(name='ttstart', help='Starts a game of tic tac toe.')
 async def ttt_start(message):
-    if message.channel not in game_dictionary:
-        game_dictionary[message.channel] = Tictactoe()
-        await message.channel.send('To mark a square, type >tt # according to this chart!\n'
-                                   ':one::two::three: \n:four::five::six: \n:seven::eight::nine:')
-        await Tictactoe.ttt_output(game_dictionary[message.channel], message)
+    if len(message.strip()) == 1 and message.strip().isnumeric():
+        if message.channel not in game_dictionary:
+            game_dictionary[message.channel] = Tictactoe()
+            await message.channel.send('To mark a square, type >tt # according to this chart!\n'
+                                       ':one::two::three: \n:four::five::six: \n:seven::eight::nine:')
+            await Tictactoe.ttt_output(game_dictionary[message.channel], message)
+        else:
+            await message.channel.send('There is already a tic tac toe game in this channel!')
     else:
-        await message.channel.send('There is already a tic tac toe game in this channel!')
+        await message.channel.send('Please specify whether there are one or two players.')
 
 
 class Hangman(commands.Cog):
