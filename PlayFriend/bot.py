@@ -2,7 +2,6 @@ import os
 import random
 import discord
 import emojis
-import re
 from discord.ext import commands
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
@@ -10,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot = Bot(command_prefix='>')
-game_dictionary = {}
+hm_game_dictionary = {}
+ttt_game_dictionary = {}
 
 #currently working on setting up backend for databasing and allowing bot to stay online indefinitely
 #must set up databasing to save long games of dungeon, also must account for large numbers of items, mobs, special events
@@ -26,38 +26,45 @@ class Dungeon(commands.Cog):
 class Tictactoe(commands.Cog):
     """Docs here"""
     #plan algo for winning ttt games
-    #randomize whether bot or player goes first.
-    #game_dictionary[message.channel] = [Tictactoe(), ttt_player_one, ttt_player_two, player_one_symbol, player_two_symbol]
 
     def __init__(self):
-        self.tt_board_list = [':white_medium_square:' for i in range(0, 9)]
+        self.tt_board_list = [':white_medium_square:' for _ in range(0, 9)]
 
     @commands.command(name='ttsetup', help='Customize the marker you place on the board.')
     async def ttt_game_setup(self, ctx):
 
         def ttt_get_emoji(emoji_response):
             return ctx.message.channel == emoji_response.channel and ctx.message.author in \
-                   game_dictionary[ctx.message.channel][1:2] and \
+                   ttt_game_dictionary[ctx.message.channel][1:2] and \
                    emojis.count(emoji_response.content.lower().strip()) > 0
 
         await ctx.message.channel.send('Put a default emoji into the chat. The marker you use on the board will change.')
 
         symbol = await bot.wait_for('message', check=ttt_get_emoji)
         symbol = emojis.decode(random.choice(list(emojis.get(symbol.content))))
-        if ctx.message.author == game_dictionary[ctx.message.channel][1]:
-            game_dictionary[ctx.message.channel][3] = symbol
-            print(game_dictionary[ctx.message.channel][3])
-        elif ctx.message.author == game_dictionary[ctx.message.channel][2]:
-            game_dictionary[ctx.message.channel][4] = symbol
+        if ctx.message.author == ttt_game_dictionary[ctx.message.channel][1]:
+            ttt_game_dictionary[ctx.message.channel][3] = symbol
+        elif ctx.message.author == ttt_game_dictionary[ctx.message.channel][2]:
+            ttt_game_dictionary[ctx.message.channel][4] = symbol
 
     @commands.command(name='ttquit', help='Quit the current tic tac toe game.')
     async def ttt_quit(self, ctx):
-        game_dictionary.pop(ctx.message.channel, None)
+        ttt_game_dictionary[ctx.message.channel][0] = None
         await ctx.message.channel.send('The tic tac toe game has ended.')
 
     async def ttt_output(self, ctx):
-        tt_board = '{0}{1}{2} \n{3}{4}{5} \n{6}{7}{8}'.format(*game_dictionary[ctx.message.channel][0].tt_board_list)
+        tt_board = '{0}{1}{2} \n{3}{4}{5} \n{6}{7}{8}'.format(*ttt_game_dictionary[ctx.message.channel][0].tt_board_list)
         await ctx.message.channel.send(tt_board)
+
+    @commands.command(name='tt', help="Use the command >tthelp if it's your first time playing.")
+    async def ttt_mark_square(self, ctx, message):
+        print('placeholder')
+        await ctx.message.channel.send('hi')
+
+    @commands.command(name='tthelp', help='Sends a message explaining how to play.')
+    async def ttt_mark_square(self, ctx):
+        await ctx.message.channel.send('To mark a square, type >tt # according to this chart!\n'
+                                       ':one::two::three: \n:four::five::six: \n:seven::eight::nine:')
 
 
 @bot.command(name='ttstart', help='Starts a game of tic tac toe.')
@@ -72,7 +79,7 @@ async def ttt_start(message):
         return message.channel == num_response.channel and \
                num_response.content.lower().strip() in ['me', 'i']
 
-    if message.channel not in game_dictionary:
+    if message.channel not in ttt_game_dictionary or ttt_game_dictionary[message.channel][0] is None:
         ttt_players = 0
         ttt_player_one = 0
         ttt_player_two = 0
@@ -81,7 +88,7 @@ async def ttt_start(message):
             response = await bot.wait_for('message', check=ttt_get_players)
             if response.content.lower().strip() in ['1', 'one', '1p']:
                 ttt_player_one = response.author
-                ttt_player_two = 'bot'
+                ttt_player_two = f'{bot.user.name}'
                 ttt_players = 1
             elif response.content.lower().strip() in ['2', 'two', '2p']:
                 ttt_player_one = response.author
@@ -94,10 +101,22 @@ async def ttt_start(message):
             else:
                 await message.channel.send('Please specify whether there are one or two players.')
 
-            game_dictionary[message.channel] = [Tictactoe(), ttt_player_one, ttt_player_two, ':x:', ':o:']
-            await message.channel.send('To mark a square, type >tt # according to this chart!\n'
-                                       ':one::two::three: \n:four::five::six: \n:seven::eight::nine:')
-            await Tictactoe.ttt_output(game_dictionary[message.channel], message)
+            if message.channel not in ttt_game_dictionary:
+                ttt_game_dictionary[message.channel] = [Tictactoe(), ttt_player_one, ttt_player_two, ':x:', ':o:']
+            else:
+                ttt_game_dictionary[message.channel][0] = Tictactoe()
+
+            if random.choice([0, 1]) == 1:
+                ttt_game_dictionary[message.channel][3:4] = ttt_game_dictionary[message.channel][4:3]
+                ttt_game_dictionary[message.channel][1:2] = ttt_game_dictionary[message.channel][2:1]
+                if ttt_game_dictionary[message.channel][1] is not f'{bot.user.name}':
+                    await message.channel.send(f'{ttt_game_dictionary[message.channel][1].mention} is going first.')
+                else:
+                    await message.channel.send('I am going first.')
+            else:
+                await message.channel.send(f'{ttt_game_dictionary[message.channel][1].mention} is going first.')
+
+            await Tictactoe.ttt_output(ttt_game_dictionary[message.channel], message)
     else:
         await message.channel.send('There is already a tic tac toe game in this channel!')
 
@@ -143,11 +162,11 @@ class Hangman(commands.Cog):
                 else:
                     hangman_custom_word += item
             await ctx.message.delete()
-            if ctx.message.channel in game_dictionary:
-                game_dictionary[ctx.message.channel].hangman_image_counter = 0
-                game_dictionary[ctx.message.channel].word = (hangman_custom_word, '...google it')
-                Hangman.hangman_guess_list(game_dictionary[ctx.message.channel])
-            await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
+            if ctx.message.channel in hm_game_dictionary:
+                hm_game_dictionary[ctx.message.channel].hangman_image_counter = 0
+                hm_game_dictionary[ctx.message.channel].word = (hangman_custom_word, '...google it')
+                Hangman.hangman_guess_list(hm_game_dictionary[ctx.message.channel])
+            await Hangman.hangman_output(hm_game_dictionary[ctx.message.channel], ctx.message)
         else:
             pass
 
@@ -157,19 +176,19 @@ class Hangman(commands.Cog):
         await message.channel.send(self.guess)
 
     async def hangman_wrong(self, ctx):
-        game_dictionary[ctx.message.channel].hangman_image_counter += 1
-        await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
-        if game_dictionary[ctx.message.channel].hangman_image_counter == 6:
-            bot_message = f'Your man is hung. RIP. The word was {game_dictionary[ctx.message.channel].word[0].lower()}, ' \
-                          f'which means {game_dictionary[ctx.message.channel].word[1]}.'
+        hm_game_dictionary[ctx.message.channel].hangman_image_counter += 1
+        await Hangman.hangman_output(hm_game_dictionary[ctx.message.channel], ctx.message)
+        if hm_game_dictionary[ctx.message.channel].hangman_image_counter == 6:
+            bot_message = f'Your man is hung. RIP. The word was {hm_game_dictionary[ctx.message.channel].word[0].lower()}, ' \
+                          f'which means {hm_game_dictionary[ctx.message.channel].word[1]}.'
             await ctx.message.channel.send(bot_message)
-            game_dictionary.pop(ctx.message.channel, None)
+            hm_game_dictionary.pop(ctx.message.channel, None)
 
     async def hangman_win(self, ctx):
-        bot_message = f'Congratulations! You won. The word was {game_dictionary[ctx.message.channel].word[0].lower()}, ' \
-                      f'which means {game_dictionary[ctx.message.channel].word[1]}.'
+        bot_message = f'Congratulations! You won. The word was {hm_game_dictionary[ctx.message.channel].word[0].lower()}, ' \
+                      f'which means {hm_game_dictionary[ctx.message.channel].word[1]}.'
         await ctx.message.channel.send(bot_message)
-        game_dictionary.pop(ctx.message.channel, None)
+        hm_game_dictionary.pop(ctx.message.channel, None)
 
     @commands.command(name='hm', help='Make a guess. Use single letters unless you are confident you know the entire word!')
     async def hangman_check(self, ctx, message):
@@ -178,38 +197,38 @@ class Hangman(commands.Cog):
         else:
             if len(message.strip()) == 1:
                 hm_letter_counter = 0
-                for letter in range(0, len(game_dictionary[ctx.message.channel].word[0])):
-                    if message[-1].strip().lower() == game_dictionary[ctx.message.channel].word[0][letter].lower():
+                for letter in range(0, len(hm_game_dictionary[ctx.message.channel].word[0])):
+                    if message[-1].strip().lower() == hm_game_dictionary[ctx.message.channel].word[0][letter].lower():
                         hm_letter_counter += 1
-                        game_dictionary[ctx.message.channel].guess_list[letter] = game_dictionary[ctx.message.channel].word[0][letter].upper()
+                        hm_game_dictionary[ctx.message.channel].guess_list[letter] = hm_game_dictionary[ctx.message.channel].word[0][letter].upper()
                     else:
                         pass
                 if hm_letter_counter == 0:
-                    await Hangman.hangman_wrong(game_dictionary[ctx.message.channel], ctx)
+                    await Hangman.hangman_wrong(hm_game_dictionary[ctx.message.channel], ctx)
                 else:
-                    await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
+                    await Hangman.hangman_output(hm_game_dictionary[ctx.message.channel], ctx.message)
             else:
-                if game_dictionary[ctx.message.channel].word[0].lower() == message.strip().lower():
-                    for letter in range(0, len(game_dictionary[ctx.message.channel].word[0])):
-                        game_dictionary[ctx.message.channel].guess_list[letter] = game_dictionary[ctx.message.channel].word[0][letter].upper()
-                    await Hangman.hangman_output(game_dictionary[ctx.message.channel], ctx.message)
-                    await Hangman.hangman_win(game_dictionary[ctx.message.channel], ctx)
+                if hm_game_dictionary[ctx.message.channel].word[0].lower() == message.strip().lower():
+                    for letter in range(0, len(hm_game_dictionary[ctx.message.channel].word[0])):
+                        hm_game_dictionary[ctx.message.channel].guess_list[letter] = hm_game_dictionary[ctx.message.channel].word[0][letter].upper()
+                    await Hangman.hangman_output(hm_game_dictionary[ctx.message.channel], ctx.message)
+                    await Hangman.hangman_win(hm_game_dictionary[ctx.message.channel], ctx)
                 else:
-                    await Hangman.hangman_wrong(game_dictionary[ctx.message.channel], ctx)
-            if '_' not in game_dictionary[ctx.message.channel].guess_list:
-                await Hangman.hangman_win(game_dictionary[ctx.message.channel], ctx)
+                    await Hangman.hangman_wrong(hm_game_dictionary[ctx.message.channel], ctx)
+            if '_' not in hm_game_dictionary[ctx.message.channel].guess_list:
+                await Hangman.hangman_win(hm_game_dictionary[ctx.message.channel], ctx)
 
     @commands.command(name='hmquit', help='Quit the current hangman game.')
     async def hangman_quit(self, ctx):
-        game_dictionary.pop(ctx.message.channel, None)
+        hm_game_dictionary.pop(ctx.message.channel, None)
         await ctx.message.channel.send('The hangman game has ended.')
 
 
 @bot.command(name='hmstart', help='Starts a game of hangman.')
 async def hangman_start(message):
-    if message.channel not in game_dictionary:
-        game_dictionary[message.channel] = Hangman()
-        await Hangman.hangman_output(game_dictionary[message.channel], message)
+    if message.channel not in hm_game_dictionary:
+        hm_game_dictionary[message.channel] = Hangman()
+        await Hangman.hangman_output(hm_game_dictionary[message.channel], message)
     else:
         await message.channel.send('There is already a hangman game in this channel!')
 
