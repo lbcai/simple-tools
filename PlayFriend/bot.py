@@ -1,6 +1,8 @@
 import os
 import random
 import discord
+import emojis
+import re
 from discord.ext import commands
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
@@ -25,17 +27,28 @@ class Tictactoe(commands.Cog):
     """Docs here"""
     #plan algo for winning ttt games
     #randomize whether bot or player goes first.
-    #allow assignment of custom X and O markers.
+    #game_dictionary[message.channel] = [Tictactoe(), ttt_player_one, ttt_player_two, player_one_symbol, player_two_symbol]
 
     def __init__(self):
         self.tt_board_list = [':white_medium_square:' for i in range(0, 9)]
-        self.tt_player_one_symbol = ':x:'
-        self.tt_player_one_symbol = ':o:'
 
     @commands.command(name='ttsetup', help='Customize the marker you place on the board.')
     async def ttt_game_setup(self, ctx):
-        await ctx.message.channel.send('Put an emoji into the chat. This will change the marker you use on the board.')
 
+        def ttt_get_emoji(emoji_response):
+            return ctx.message.channel == emoji_response.channel and ctx.message.author in \
+                   game_dictionary[ctx.message.channel][1:2] and \
+                   emojis.count(emoji_response.content.lower().strip()) > 0
+
+        await ctx.message.channel.send('Put a default emoji into the chat. The marker you use on the board will change.')
+
+        symbol = await bot.wait_for('message', check=ttt_get_emoji)
+        symbol = emojis.decode(random.choice(list(emojis.get(symbol.content))))
+        if ctx.message.author == game_dictionary[ctx.message.channel][1]:
+            game_dictionary[ctx.message.channel][3] = symbol
+            print(game_dictionary[ctx.message.channel][3])
+        elif ctx.message.author == game_dictionary[ctx.message.channel][2]:
+            game_dictionary[ctx.message.channel][4] = symbol
 
     @commands.command(name='ttquit', help='Quit the current tic tac toe game.')
     async def ttt_quit(self, ctx):
@@ -81,7 +94,7 @@ async def ttt_start(message):
             else:
                 await message.channel.send('Please specify whether there are one or two players.')
 
-            game_dictionary[message.channel] = [Tictactoe(), ttt_players, ttt_player_one, ttt_player_two]
+            game_dictionary[message.channel] = [Tictactoe(), ttt_player_one, ttt_player_two, ':x:', ':o:']
             await message.channel.send('To mark a square, type >tt # according to this chart!\n'
                                        ':one::two::three: \n:four::five::six: \n:seven::eight::nine:')
             await Tictactoe.ttt_output(game_dictionary[message.channel], message)
