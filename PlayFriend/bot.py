@@ -26,14 +26,17 @@ class Dungeon(commands.Cog):
 class Tictactoe(commands.Cog):
     """Docs here"""
 
-    def __init__(self):
+    def __init__(self, ctx):
         self.tt_board_list = [':white_medium_square:' for _ in range(0, 9)]
+        self.tt_p1_symbol = ttt_game_dictionary[ctx.channel][3]
+        self.tt_p2_symbol = ttt_game_dictionary[ctx.channel][4]
+        self.ttt_first_player = 0
 
     async def ttt_output(self, ctx):
         tt_board = '{0}{1}{2} \n{3}{4}{5} \n{6}{7}{8}'.format(*ttt_game_dictionary[ctx.channel][0].tt_board_list)
         await ctx.channel.send(tt_board)
 
-    async def ttt_bot_turn(self, ctx):
+    async def ttt_player_turn(self, ctx):
 
         print('bla')
 
@@ -55,13 +58,17 @@ class Tictactoe(commands.Cog):
         symbol = emojis.decode(random.choice(list(emojis.get(symbol.content))))
         if ctx.message.author == ttt_game_dictionary[ctx.channel][1]:
             ttt_game_dictionary[ctx.channel][3] = symbol
+            ttt_game_dictionary[ctx.channel][0].tt_p1_symbol = ttt_game_dictionary[ctx.channel][3]
         elif ctx.message.author == ttt_game_dictionary[ctx.channel][2]:
             ttt_game_dictionary[ctx.channel][4] = symbol
+            ttt_game_dictionary[ctx.channel][0].tt_p2_symbol = ttt_game_dictionary[ctx.channel][4]
+        await ctx.channel.send('Your marker has been changed.')
 
     @commands.command(name='ttquit', help='Quit the current tic tac toe game.')
     async def ttt_quit(self, ctx):
         ttt_game_dictionary[ctx.channel][0] = None
         await ctx.channel.send('The tic tac toe game has ended.')
+        bot.remove_cog('Tictactoe')
 
     @commands.command(name='tthelp', help='Sends a message explaining how to play.')
     async def ttt_help(self, ctx):
@@ -73,9 +80,9 @@ class Tictactoe(commands.Cog):
         if int(message.strip()) in range(1, 10):
             if ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] == ':white_medium_square:':
                 if ctx.message.author == ttt_game_dictionary[ctx.channel][1]:
-                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = ttt_game_dictionary[ctx.channel][3]
+                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = ttt_game_dictionary[ctx.channel][0].tt_p1_symbol
                 elif ctx.message.author == ttt_game_dictionary[ctx.channel][2]:
-                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = ttt_game_dictionary[ctx.channel][4]
+                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = ttt_game_dictionary[ctx.channel][0].tt_p2_symbol
                 await Tictactoe.ttt_output(ttt_game_dictionary[ctx.channel], ctx)
             else:
                 await ctx.channel.send('That square is already marked.')
@@ -118,26 +125,26 @@ async def ttt_start(ctx):
                 await ctx.channel.send('Please specify whether there are one or two players.')
 
             if ctx.channel not in ttt_game_dictionary:
-                ttt_game_dictionary[ctx.channel] = [Tictactoe(), ttt_player_one, ttt_player_two, ':x:', ':o:']
+                ttt_game_dictionary[ctx.channel] = [None, ttt_player_one, ttt_player_two, ':x:', ':o:']
+                ttt_game_dictionary[ctx.channel][0] = Tictactoe(ctx)
             else:
-                ttt_game_dictionary[ctx.channel][0:3] = [Tictactoe(), ttt_player_one, ttt_player_two]
+                ttt_game_dictionary[ctx.channel][0:3] = [Tictactoe(ctx), ttt_player_one, ttt_player_two]
 
             if random.choice([0, 1]) == 1:
-                ttt_game_dictionary[ctx.channel][3], ttt_game_dictionary[ctx.channel][4] = \
-                    ttt_game_dictionary[ctx.channel][4], ttt_game_dictionary[ctx.channel][3]
-                ttt_game_dictionary[ctx.channel][1], ttt_game_dictionary[ctx.channel][2] = \
-                    ttt_game_dictionary[ctx.channel][2], ttt_game_dictionary[ctx.channel][1]
-                if ttt_game_dictionary[ctx.channel][1] is not f'{bot.user.name}':
-                    await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][1].mention} is going first.')
+                ttt_game_dictionary[ctx.channel][0].ttt_first_player = 2
+                if ttt_game_dictionary[ctx.channel][2] is not f'{bot.user.name}':
+                    await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][2].mention} is going first.')
                 else:
                     await ctx.channel.send('I am going first.')
-                    ttt_game_dictionary[ctx.channel][0].tt_board_list[random.choice(range(0, 9))] = ttt_game_dictionary[ctx.channel][3]
+                    ttt_game_dictionary[ctx.channel][0].tt_board_list[random.choice(range(0, 9))] = ttt_game_dictionary[ctx.channel][0].tt_p2_symbol
             else:
+                ttt_game_dictionary[ctx.channel][0].ttt_first_player = 1
                 await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][1].mention} is going first.')
 
             await Tictactoe.ttt_output(ttt_game_dictionary[ctx.channel], ctx)
     else:
         await ctx.channel.send('There is already a tic tac toe game in this channel!')
+    bot.add_cog(Tictactoe(ctx))
 
 
 class Hangman(commands.Cog):
@@ -250,6 +257,7 @@ class Hangman(commands.Cog):
             await ctx.channel.send('The hangman game has ended.')
         else:
             await ctx.channel.send('There is currently no hangman game in this channel.')
+        bot.remove_cog('Hangman')
 
 
 @bot.command(name='hmstart', help='Starts a game of hangman.')
@@ -259,10 +267,7 @@ async def hangman_start(message):
         await Hangman.hangman_output(hm_game_dictionary[message.channel], message)
     else:
         await message.channel.send('There is already a hangman game in this channel!')
-
-
-bot.add_cog(Hangman())
-bot.add_cog(Tictactoe())
+    bot.add_cog(Hangman())
 
 
 @bot.event
