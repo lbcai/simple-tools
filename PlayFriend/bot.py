@@ -27,22 +27,76 @@ class Tictactoe(commands.Cog):
     """Docs here"""
 
     def __init__(self, ctx):
-        self.tt_board_list = [':white_medium_square:' for _ in range(0, 9)]
+        self.tt_board_list = [0 for _ in range(0, 9)]
         self.tt_p1_symbol = ttt_game_dictionary[ctx.channel][3]
         self.tt_p2_symbol = ttt_game_dictionary[ctx.channel][4]
         self.ttt_first_player = 0
 
     async def ttt_output(self, ctx):
-        tt_board = '{0}{1}{2} \n{3}{4}{5} \n{6}{7}{8}'.format(*ttt_game_dictionary[ctx.channel][0].tt_board_list)
+        def ttt_replacer(list):
+            tt_num_list = [':one:', ':two:', ':three:', ':four:', ':five:', ':six:', ':seven:', ':eight:', ':nine:']
+            tt_symbol_list = []
+            for i in range(len(list)):
+                if list[i] == 0:
+                    tt_symbol_list.append(tt_num_list[i])
+                elif list[i] == 1:
+                    tt_symbol_list.append(ttt_game_dictionary[ctx.channel][0].tt_p1_symbol)
+                else:
+                    tt_symbol_list.append(ttt_game_dictionary[ctx.channel][0].tt_p2_symbol)
+            return tt_symbol_list
+
+        tt_board = '{0}{1}{2} \n{3}{4}{5} \n{6}{7}{8}'.format(*ttt_replacer(ttt_game_dictionary[ctx.channel][0].tt_board_list))
         await ctx.channel.send(tt_board)
+        await Tictactoe.ttt_check_win(ttt_game_dictionary[ctx.channel][0], ctx)
 
     async def ttt_player_turn(self, ctx):
 
         print('bla')
 
     async def ttt_check_win(self, ctx):
-
-        print('bla')
+        tt_list = ttt_game_dictionary[ctx.channel][0].tt_board_list
+        for row in range(0, 3):
+            offset = row * 3
+            if tt_list[offset] == tt_list[offset + 1] == tt_list[offset + 2]:
+                if tt_list[offset] == 0:
+                    return
+                elif tt_list[offset] == 1:
+                    await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][1].mention} has won the game!')
+                elif tt_list[offset] == 2:
+                    if ttt_game_dictionary[ctx.channel][2] is not f'{bot.user.name}':
+                        await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][2].mention} has won the game!')
+                    else:
+                        await ctx.channel.send('Better luck next time!')
+                await Tictactoe.ttt_quit(ttt_game_dictionary[ctx.channel], ctx)
+                return
+        for column in range(0, 3):
+            if tt_list[column] == tt_list[column + 3] == tt_list[column + 6]:
+                if tt_list[column] == 0:
+                    return
+                elif tt_list[column] == 1:
+                    await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][1].mention} has won the game!')
+                elif tt_list[column] == 2:
+                    if ttt_game_dictionary[ctx.channel][2] is not f'{bot.user.name}':
+                        await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][2].mention} has won the game!')
+                    else:
+                        await ctx.channel.send('Better luck next time!')
+                await Tictactoe.ttt_quit(ttt_game_dictionary[ctx.channel], ctx)
+                return
+        if (tt_list[0] == tt_list[4] == tt_list[8]) or (tt_list[2] == tt_list[4] == tt_list[6]):
+            if tt_list[4] == 0:
+                return
+            elif tt_list[4] == 1:
+                await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][1].mention} has won the game!')
+            elif tt_list[4] == 2:
+                if ttt_game_dictionary[ctx.channel][2] is not f'{bot.user.name}':
+                    await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][2].mention} has won the game!')
+                else:
+                    await ctx.channel.send('Better luck next time!')
+            await Tictactoe.ttt_quit(ttt_game_dictionary[ctx.channel], ctx)
+            return
+        if 0 not in tt_list:
+            await ctx.channel.send('It\'s a tie!')
+            return
 
     @commands.command(name='ttsetup', help='Customize the marker you place on the board.')
     async def ttt_game_setup(self, ctx):
@@ -70,19 +124,14 @@ class Tictactoe(commands.Cog):
         await ctx.channel.send('The tic tac toe game has ended.')
         bot.remove_cog('Tictactoe')
 
-    @commands.command(name='tthelp', help='Sends a message explaining how to play.')
-    async def ttt_help(self, ctx):
-        await ctx.channel.send('To mark a square, type >tt # according to this chart!\n'
-                               ':one::two::three: \n:four::five::six: \n:seven::eight::nine:')
-
-    @commands.command(name='tt', help="Use the command >tthelp if it's your first time playing.")
+    @commands.command(name='tt', help="To mark a square, type >tt # according to the grid.")
     async def ttt_mark_square(self, ctx, message):
         if int(message.strip()) in range(1, 10):
-            if ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] == ':white_medium_square:':
+            if ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] == 0:
                 if ctx.message.author == ttt_game_dictionary[ctx.channel][1]:
-                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = ttt_game_dictionary[ctx.channel][0].tt_p1_symbol
+                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = 1
                 elif ctx.message.author == ttt_game_dictionary[ctx.channel][2]:
-                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = ttt_game_dictionary[ctx.channel][0].tt_p2_symbol
+                    ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = 2
                 await Tictactoe.ttt_output(ttt_game_dictionary[ctx.channel], ctx)
             else:
                 await ctx.channel.send('That square is already marked.')
@@ -136,7 +185,7 @@ async def ttt_start(ctx):
                     await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][2].mention} is going first.')
                 else:
                     await ctx.channel.send('I am going first.')
-                    ttt_game_dictionary[ctx.channel][0].tt_board_list[random.choice(range(0, 9))] = ttt_game_dictionary[ctx.channel][0].tt_p2_symbol
+                    ttt_game_dictionary[ctx.channel][0].tt_board_list[random.choice(range(0, 9))] = 2
             else:
                 ttt_game_dictionary[ctx.channel][0].ttt_first_player = 1
                 await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][1].mention} is going first.')
@@ -282,6 +331,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
     if message.content == 'hi':
+        await message.channel.send('It\'s a tie!')
         await message.channel.send('<:rip:280861016911380480>')
 
     await bot.process_commands(message)
