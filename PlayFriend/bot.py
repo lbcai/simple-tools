@@ -34,7 +34,9 @@ class Tictactoe(commands.Cog):
 
     async def ttt_ai_move(self, ctx):
         tt_list = ttt_game_dictionary[ctx.channel][0].tt_board_list
-        def ttt_evaluate():
+        rng_limiter = random.choice([5, 5, 5, 5, 6])
+
+        def ttt_evaluate(tt_list):
             for row in range(0, 3):
                 offset = row * 3
                 if tt_list[offset] == tt_list[offset + 1] and tt_list[offset + 1] == tt_list[offset + 2]:
@@ -56,8 +58,8 @@ class Tictactoe(commands.Cog):
                     return 10
             return 0
 
-        def ttt_minimax(tt_list, bot_turn):
-            score = ttt_evaluate()
+        def ttt_minimax(tt_list, bot_turn, depth):
+            score = ttt_evaluate(tt_list)
             if score == 10:
                 return score
             if score == -10:
@@ -66,35 +68,43 @@ class Tictactoe(commands.Cog):
                 return 0
 
             if bot_turn:
-                best_score = -11
+                best_score = -10
                 for square in range(0, 9):
                     if tt_list[square] == 0:
                         tt_list[square] = 2
-                        best_score = max(best_score, ttt_minimax(tt_list, not bot_turn))
+                        if depth < rng_limiter:
+                            best_score = max(best_score, ttt_minimax(tt_list, False, depth + 1))
                         tt_list[square] = 0
-                return best_score
+                return best_score - depth
             if not bot_turn:
-                best_score = 11
+                not_best_score = 10
                 for square in range(0, 9):
                     if tt_list[square] == 0:
                         tt_list[square] = 1
-                        best_score = max(best_score, ttt_minimax(tt_list, bot_turn))
+                        if depth < rng_limiter:
+                            not_best_score = min(not_best_score, ttt_minimax(tt_list, True, depth + 1))
                         tt_list[square] = 0
-                return best_score
+                return not_best_score + depth
+
+        if ttt_game_dictionary[ctx.channel][0].tt_board_list.count(0) >= 8:
+            ttt_game_dictionary[ctx.channel][0].tt_board_list[random.choice(range(0, 9))] = 2
+            return
 
         tt_list_copy = ttt_game_dictionary[ctx.channel][0].tt_board_list * 1
-        best_value = -11
+        best_value = -100
         best_move = -1
         for square in range(0, 9):
             if tt_list_copy[square] == 0:
                 tt_list_copy[square] = 2
-                minimax_value = ttt_minimax(tt_list_copy, True)
+                minimax_value = ttt_minimax(tt_list_copy, False, 0)
                 tt_list_copy[square] = 0
                 if minimax_value > best_value:
                     best_value = minimax_value
                     best_move = square
-
-        tt_list[best_move] = 2
+        if best_move != -1:
+            tt_list[best_move] = 2
+        else:
+            await ctx.channel.send('Something went wrong. Restart the game!')
 
     async def ttt_output(self, ctx):
         def ttt_replacer(tt_list):
@@ -158,25 +168,34 @@ class Tictactoe(commands.Cog):
             await ctx.channel.send('It\'s a tie!')
             await Tictactoe.ttt_quit(ttt_game_dictionary[ctx.channel], ctx)
 
-    @commands.command(name='ttsetup', help='Customize the marker you place on the board.')
-    async def ttt_game_setup(self, ctx):
+    @commands.command(name='ttsetup', help='Customize the marker you place on the board. Type bot after to randomize the bot marker.')
+    async def ttt_game_setup(self, ctx, message='not bot'):
 
         def ttt_get_emoji(emoji_response):
-            return ctx.channel == emoji_response.channel and ctx.message.author in \
-                   ttt_game_dictionary[ctx.channel][1:2] and \
+            return ctx.channel == emoji_response.channel and ctx.message.author == emoji_response.author and\
                    emojis.count(emoji_response.content) > 0
 
-        await ctx.channel.send('Put a default emoji into the chat. The marker you use on the board will change.')
+        if ctx.message.author in ttt_game_dictionary[ctx.channel][1:3]:
+            if message.strip().lower() == 'bot' and ttt_game_dictionary[ctx.channel][2] is f'{bot.user.name}':
+                await ctx.channel.send('Put a default emoji into the chat. The marker I use on the board will change.')
+                symbol = await bot.wait_for('message', check=ttt_get_emoji)
+                symbol = emojis.decode(random.choice(list(emojis.get(symbol.content))))
+                ttt_game_dictionary[ctx.channel][4] = symbol
+                ttt_game_dictionary[ctx.channel][0].tt_p2_symbol = ttt_game_dictionary[ctx.channel][4]
+                await ctx.channel.send('My marker has been changed.')
+                return
 
-        symbol = await bot.wait_for('message', check=ttt_get_emoji)
-        symbol = emojis.decode(random.choice(list(emojis.get(symbol.content))))
-        if ctx.message.author == ttt_game_dictionary[ctx.channel][1]:
-            ttt_game_dictionary[ctx.channel][3] = symbol
-            ttt_game_dictionary[ctx.channel][0].tt_p1_symbol = ttt_game_dictionary[ctx.channel][3]
-        elif ctx.message.author == ttt_game_dictionary[ctx.channel][2]:
-            ttt_game_dictionary[ctx.channel][4] = symbol
-            ttt_game_dictionary[ctx.channel][0].tt_p2_symbol = ttt_game_dictionary[ctx.channel][4]
-        await ctx.channel.send('Your marker has been changed.')
+            await ctx.channel.send('Put a default emoji into the chat. The marker you use on the board will change.')
+
+            symbol = await bot.wait_for('message', check=ttt_get_emoji)
+            symbol = emojis.decode(random.choice(list(emojis.get(symbol.content))))
+            if ctx.message.author == ttt_game_dictionary[ctx.channel][1]:
+                ttt_game_dictionary[ctx.channel][3] = symbol
+                ttt_game_dictionary[ctx.channel][0].tt_p1_symbol = ttt_game_dictionary[ctx.channel][3]
+            elif ctx.message.author == ttt_game_dictionary[ctx.channel][2]:
+                ttt_game_dictionary[ctx.channel][4] = symbol
+                ttt_game_dictionary[ctx.channel][0].tt_p2_symbol = ttt_game_dictionary[ctx.channel][4]
+            await ctx.channel.send('Your marker has been changed.')
 
     @commands.command(name='ttquit', help='Quit the current tic tac toe game.')
     async def ttt_quit(self, ctx):
@@ -191,18 +210,20 @@ class Tictactoe(commands.Cog):
                 if ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] == 0:
                     if ctx.message.author == ttt_game_dictionary[ctx.channel][1] and ttt_game_dictionary[ctx.channel][0].ttt_first_player == 1:
                         ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = 1
-                        ttt_game_dictionary[ctx.channel][0].ttt_first_player == 2
-                        if ttt_game_dictionary[ctx.channel][2] is f'{bot.user.name}':
-                            await Tictactoe.ttt_ai_move(ttt_game_dictionary[ctx.channel][0], ctx)
-                            ttt_game_dictionary[ctx.channel][0].ttt_first_player == 1
+                        ttt_game_dictionary[ctx.channel][0].ttt_first_player = 2
                     elif ctx.message.author == ttt_game_dictionary[ctx.channel][2] and ttt_game_dictionary[ctx.channel][0].ttt_first_player == 2:
                         ttt_game_dictionary[ctx.channel][0].tt_board_list[int(message.strip()) - 1] = 2
-                        ttt_game_dictionary[ctx.channel][0].ttt_first_player == 1
+                        ttt_game_dictionary[ctx.channel][0].ttt_first_player = 1
                     await Tictactoe.ttt_output(ttt_game_dictionary[ctx.channel], ctx)
                 else:
                     await ctx.channel.send('That square is already marked.')
             else:
                 await ctx.channel.send('Send a number between 1 and 9 to mark a square!')
+        if ttt_game_dictionary[ctx.channel][0] is not None:
+            if ttt_game_dictionary[ctx.channel][2] is f'{bot.user.name}' and 0 in ttt_game_dictionary[ctx.channel][0].tt_board_list and ttt_game_dictionary[ctx.channel][0].ttt_first_player == 2:
+                await Tictactoe.ttt_ai_move(ttt_game_dictionary[ctx.channel][0], ctx)
+                ttt_game_dictionary[ctx.channel][0].ttt_first_player = 1
+                await Tictactoe.ttt_output(ttt_game_dictionary[ctx.channel], ctx)
 
 
 @bot.command(name='ttstart', help='Starts a game of tic tac toe.')
@@ -251,7 +272,7 @@ async def ttt_start(ctx):
                     await ctx.channel.send(f'{ttt_game_dictionary[ctx.channel][2].mention} is going first.')
                 else:
                     await ctx.channel.send('I am going first.')
-                    ttt_game_dictionary[ctx.channel][0].tt_board_list[random.choice(range(0, 9))] = 2
+                    await Tictactoe.ttt_ai_move(ttt_game_dictionary[ctx.channel][0], ctx)
                     ttt_game_dictionary[ctx.channel][0].ttt_first_player = 1
             else:
                 ttt_game_dictionary[ctx.channel][0].ttt_first_player = 1
