@@ -88,9 +88,7 @@ function printDymo91386000(printerValue, longPng, circlePng) {
     labelPng.print(printerValue);
   }
 }
-//
-alert("Success!");
-//
+
 function getDymo91386000Label() {
   return `<?xml version="1.0" encoding="utf-8"?>
   <DieCutLabel Version="8.0" Units="twips">

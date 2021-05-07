@@ -2,7 +2,7 @@
   "name": "printExtension",
   "description": "Intercept label print request and insert custom label dimensions.",
   "version": "1.0",
-  "manifest_version": 3,
+  "manifest_version": 2,
   "background": {
     "service_worker": "background.js"
   },
