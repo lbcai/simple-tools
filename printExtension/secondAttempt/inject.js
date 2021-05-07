@@ -1,4 +1,8 @@
-function loadPrinters(printersSelect) {
+// this is the code which will be injected into a given page...
+
+(function() {
+
+	function loadPrinters(printersSelect) {
   const printers = dymo.label.framework.getPrinters();
   if (!printersSelect || printers.length === 0) {
     throw new Error("Printers are not ready yet. Please try again.");
@@ -129,7 +133,7 @@ function getDymo91386000Label() {
         <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
         <BackColor Alpha="0" Red="255" Green="255" Blue="255" />
         <LinkedObjectName></LinkedObjectName>
-        <Rotation>Rotation90</Rotation>
+        <Rotation>Rotation0</Rotation>
         <IsMirrored>False</IsMirrored>
         <IsVariable>False</IsVariable>
         <ImageLocation/>
@@ -143,3 +147,7 @@ function getDymo91386000Label() {
     </ObjectInfo>
   </DieCutLabel>`;
 }
+
+	alert('Inserted!');
+
+})();
