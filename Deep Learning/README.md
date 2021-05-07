@@ -1,5 +1,5 @@
 # Deep Learning
-This is a series of Jupyter Notebook files written while reading [Andrew W. Trask's](https://github.com/iamtrask/) book <i>Grokking Deep Learning</i>. 
+This is a series of Jupyter Notebook files written while reading [Andrew W. Trask's](https://github.com/iamtrask/) <i>Grokking Deep Learning</i>. 
 Code exercises and notes on the actual reading are both present. The purpose of these exercises is to become more familiar with the fundamental workings and capabilities of
 basic machine learning techniques.
 
