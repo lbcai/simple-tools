@@ -1,8 +1,4 @@
-// this is the code which will be injected into a given page...
-
-(function() {
-
-	function loadPrinters(printersSelect) {
+function loadPrinters(printersSelect) {
   const printers = dymo.label.framework.getPrinters();
   if (!printersSelect || printers.length === 0) {
     throw new Error("Printers are not ready yet. Please try again.");
@@ -27,7 +23,7 @@ function getLabels() {
     defaultValue: 91386000,
     data: {
       91386000: {
-        desciption: `DTCR 9138-6000 (Combo Label) (1.50 x 0.50, 0.375 dia spot)`,
+        desciption: `Labtag Cryogenic Labels`,
         printLabel: printDymo91386000,
       },
       // 30252: {
@@ -96,14 +92,14 @@ function printDymo91386000(printerValue, longPng, circlePng) {
 function getDymo91386000Label() {
   return `<?xml version="1.0" encoding="utf-8"?>
   <DieCutLabel Version="8.0" Units="twips">
-    <PaperOrientation>Portrait</PaperOrientation>
-    <Id>DT Cryo-Tag DTCR-6000 1.50" x 0.50" w/3/8" Spot</Id>
+    <PaperOrientation>Landscape</PaperOrientation>
+    <Id>Labtag Cryogenic Labels</Id>
     <IsOutlined>false</IsOutlined>
     <CustomPaper>
-      <Size Width="1260" Height="3600" />
-      <PrintableSize Width="720" Height="3600" />
+      <Size Width="2000" Height="3600" />
+      <PrintableSize Width="2000" Height="3600" />
       <PrintableOrigin X="0" Y="0" />
-      <Offset X="350" Y="-400" />
+      <Offset X="0" Y="-400" />
     </CustomPaper>
     <DrawCommands>
       <RoundRectangle X="0" Y="540" Width="720" Height="2160" Rx="180" Ry="180" />
@@ -125,7 +121,7 @@ function getDymo91386000Label() {
         <HorizontalAlignment>Center</HorizontalAlignment>
         <VerticalAlignment>Center</VerticalAlignment>
       </ImageObject>
-      <Bounds X="40.5633802816901" Y="510.788732394366" Width="652.394366197183" Height="2051.83098591549" />
+      <Bounds X="0" Y="300" Width="600" Height="1200" />
     </ObjectInfo>
     <ObjectInfo>
       <ImageObject>
@@ -133,7 +129,7 @@ function getDymo91386000Label() {
         <ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
         <BackColor Alpha="0" Red="255" Green="255" Blue="255" />
         <LinkedObjectName></LinkedObjectName>
-        <Rotation>Rotation0</Rotation>
+        <Rotation>Rotation90</Rotation> 
         <IsMirrored>False</IsMirrored>
         <IsVariable>False</IsVariable>
         <ImageLocation/>
@@ -143,11 +139,7 @@ function getDymo91386000Label() {
         <HorizontalAlignment>Center</HorizontalAlignment>
         <VerticalAlignment>Center</VerticalAlignment>
       </ImageObject>
-      <Bounds X="170" Y="2800" Width="400" Height="400" />
+      <Bounds X="0" Y="350" Width="350" Height="350" />
     </ObjectInfo>
   </DieCutLabel>`;
 }
-
-	alert('Inserted!');
-
-})();
